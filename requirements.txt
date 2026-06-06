@@ -1,0 +1,18 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Tro-Fit AI Vision — Python 의존 라이브러리
+# ─────────────────────────────────────────────────────────────────────────────
+# 설치 방법:
+#   python -m venv venv
+#   venv\Scripts\activate        # Windows
+#   source venv/bin/activate     # macOS / Linux
+#   pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 포즈 추정 (BlazePose / MediaPipe)
+mediapipe==0.10.35
+
+# 이미지 처리
+opencv-python==4.13.0.92
+
+# 수치 연산
+numpy==2.4.6
