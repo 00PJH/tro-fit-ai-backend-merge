@@ -9,63 +9,9 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from pictographic_generator import generate_pictographic_svg
+from landmarks import BlazePoseLandmark, POSE_CONNECTIONS, LEFT_LANDMARKS, RIGHT_LANDMARKS
 
-# 33개 포즈 랜드마크 인덱스 쌍 정의 (BlazePose 연결 구조)
-POSE_CONNECTIONS = [
-    (0, 1), (1, 2), (2, 3), (3, 7),
-    (0, 4), (4, 5), (5, 6), (6, 8),
-    (9, 10),
-    (11, 12),
-    (11, 13), (13, 15),
-    (12, 14), (14, 16),
-    (15, 17), (15, 19), (15, 21), (17, 19),
-    (16, 18), (16, 20), (16, 22), (18, 20),
-    (11, 23), (12, 24),
-    (23, 24),
-    (23, 25), (25, 27), (27, 29), (29, 31), (27, 31),
-    (24, 26), (26, 28), (28, 30), (30, 32), (28, 32),
-]
 
-# 33개 랜드마크 이름 (인덱스 순서) - key에 띄어쓰기 대신 _ 사용
-LANDMARK_NAMES = [
-    "nose",               # 0
-    "left_eye_inner",     # 1
-    "left_eye",           # 2
-    "left_eye_outer",     # 3
-    "right_eye_inner",    # 4
-    "right_eye",          # 5
-    "right_eye_outer",    # 6
-    "left_ear",           # 7
-    "right_ear",          # 8
-    "mouth_left",         # 9
-    "mouth_right",        # 10
-    "left_shoulder",      # 11
-    "right_shoulder",     # 12
-    "left_elbow",         # 13
-    "right_elbow",        # 14
-    "left_wrist",         # 15
-    "right_wrist",        # 16
-    "left_pinky",         # 17
-    "right_pinky",        # 18
-    "left_index",         # 19
-    "right_index",        # 20
-    "left_thumb",         # 21
-    "right_thumb",        # 22
-    "left_hip",           # 23
-    "right_hip",          # 24
-    "left_knee",          # 25
-    "right_knee",         # 26
-    "left_ankle",         # 27
-    "right_ankle",        # 28
-    "left_heel",          # 29
-    "right_heel",         # 30
-    "left_foot_index",    # 31
-    "right_foot_index",   # 32
-]
-
-# 좌/우 랜드마크 분류 (시각화 색상 지정용)
-LEFT_LANDMARKS  = {1, 2, 3, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31}
-RIGHT_LANDMARKS = {4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32}
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -124,7 +70,9 @@ def draw_landmarks_on_image(image, detection_result, visibility_threshold=0.2):
 def extract_landmarks_json(pose_landmarks_list, image_width, image_height):
     """
     감지된 포즈(들)의 33개 랜드마크 좌표를 JSON 직렬화 가능한 구조로 변환합니다.
-    key에 띄어쓰기가 없도록 LANDMARK_NAMES에서 _로 이미 처리되어 있습니다.
+
+    BlazePoseLandmark(idx).json_key() 로 JSON 키를 O(1) 에 확정합니다.
+    (기존 LANDMARK_NAMES[idx] 방식 대비 경계 검사와 replace(" ", "_")가 불필요)
 
     반환 형식:
     [
@@ -149,10 +97,10 @@ def extract_landmarks_json(pose_landmarks_list, image_width, image_height):
         landmarks_dict = {}
 
         for idx, landmark in enumerate(pose_landmarks):
-            # 이름에 띄어쓰기가 없도록 _ 처리된 LANDMARK_NAMES 사용
-            raw_name = LANDMARK_NAMES[idx] if idx < len(LANDMARK_NAMES) else f"landmark_{idx}"
-            # 혹시 남아있는 공백도 한 번 더 방어 처리
-            safe_name = raw_name.replace(" ", "_")
+            try:
+                safe_name = BlazePoseLandmark(idx).json_key()  # O(1) 변환
+            except ValueError:
+                safe_name = f"landmark_{idx}"                  # 33개 범위 밖 방어
 
             landmarks_dict[safe_name] = {
                 "x":          round(float(landmark.x), 6),

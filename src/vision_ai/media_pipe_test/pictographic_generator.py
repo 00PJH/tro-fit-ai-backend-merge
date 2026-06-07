@@ -22,74 +22,19 @@ pictographic_generator.py
       image_height=data["image_height"],
       output_path="output.svg",
   )
+
+랜드마크 상수는 landmarks.py 에서 중앙 관리합니다.
+랜드마크를 추가·수정할 때는 landmarks.py 만 편집하세요.
 """
 
 from __future__ import annotations
 import xml.etree.ElementTree as ET
 from typing import Optional
 
-# ──────────────────────────────────────────────────────────────────────────────
-# BlazePose 33개 랜드마크 이름 (인덱스 순서)
-# ──────────────────────────────────────────────────────────────────────────────
-LANDMARK_NAMES: list[str] = [
-    "nose",              # 0
-    "left_eye_inner",    # 1
-    "left_eye",          # 2
-    "left_eye_outer",    # 3
-    "right_eye_inner",   # 4
-    "right_eye",         # 5
-    "right_eye_outer",   # 6
-    "left_ear",          # 7
-    "right_ear",         # 8
-    "mouth_left",        # 9
-    "mouth_right",       # 10
-    "left_shoulder",     # 11
-    "right_shoulder",    # 12
-    "left_elbow",        # 13
-    "right_elbow",       # 14
-    "left_wrist",        # 15
-    "right_wrist",       # 16
-    "left_pinky",        # 17
-    "right_pinky",       # 18
-    "left_index",        # 19
-    "right_index",       # 20
-    "left_thumb",        # 21
-    "right_thumb",       # 22
-    "left_hip",          # 23
-    "right_hip",         # 24
-    "left_knee",         # 25
-    "right_knee",        # 26
-    "left_ankle",        # 27
-    "right_ankle",       # 28
-    "left_heel",         # 29
-    "right_heel",        # 30
-    "left_foot_index",   # 31
-    "right_foot_index",  # 32
-]
+from landmarks import BlazePoseLandmark, BODY_CONNECTIONS
 
-# ──────────────────────────────────────────────────────────────────────────────
-# 픽토그래픽용 뼈대 연결 (얼굴 세부 / 손가락 제외)
-#   눈·귀·입·손가락 연결을 제거해 '민트색 점' 현상 원천 차단
-#   발은 발목→발끝 단일 선만 유지
-# ──────────────────────────────────────────────────────────────────────────────
-BODY_CONNECTIONS: list[tuple[int, int]] = [
-    # 어깨 (torso top)
-    (11, 12),
-    # 왼팔
-    (11, 13), (13, 15),
-    # 오른팔
-    (12, 14), (14, 16),
-    # 몸통
-    (11, 23), (12, 24), (23, 24),
-    # 왼다리
-    (23, 25), (25, 27),
-    # 오른다리
-    (24, 26), (26, 28),
-    # 왼발 (발목 → 발끝)
-    (27, 31),
-    # 오른발
-    (28, 32),
-]
+# LANDMARK_NAMES, BODY_CONNECTIONS 는 landmarks.py 에서 임포트
+# BlazePoseLandmark(idx).name.lower() 로 JSON 키를 O(1) 에 조회 가능
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 디자인 토큰
@@ -127,20 +72,23 @@ def _build_coords(
     scale_x: float,
     scale_y: float,
     visibility_threshold: float,
-) -> dict[int, tuple[float, float]]:
+) -> dict[BlazePoseLandmark, tuple[float, float]]:
     """
     landmarks dict 에서 visibility >= threshold 인 관절의 픽셀 좌표를 반환.
+
+    BlazePoseLandmark(idx).name.lower() 로 JSON 키를 O(1) 에 조회합니다.
+    (기존 enumerate(LANDMARK_NAMES) 방식 대비 역방향 조회가 필요 없어 더 명확)
     """
-    coords: dict[int, tuple[float, float]] = {}
-    for idx, name in enumerate(LANDMARK_NAMES):
-        lm = landmarks.get(name)
-        if lm is None:
+    coords: dict[BlazePoseLandmark, tuple[float, float]] = {}
+    for bpl in BlazePoseLandmark:
+        data = landmarks.get(bpl.json_key())  # O(1) dict 조회
+        if data is None:
             continue
-        if lm.get("visibility", 0) < visibility_threshold:
+        if data.get("visibility", 0) < visibility_threshold:
             continue
-        coords[idx] = (
-            lm["pixel_x"] * scale_x,
-            lm["pixel_y"] * scale_y,
+        coords[bpl] = (
+            data["pixel_x"] * scale_x,
+            data["pixel_y"] * scale_y,
         )
     return coords
 
