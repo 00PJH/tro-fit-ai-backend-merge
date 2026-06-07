@@ -9,10 +9,11 @@ angle_calculator_test.py — 관절 각도 계산 및 시각화 모듈
   │   └── joint_img/       : pose_test.py 가 생성 (관절 추출 결과 이미지)
   ├── pictographic/        : pose_test.py 가 생성 (SVG 픽토그래픽)
   └── angle/
-      ├── test_1_angle.json          : 이미지별 각도 결과
-      ├── test_2_angle.json
-      ├── test_3_angle.json
-      ├── angle_all.json             : 통합 결과
+      ├── angle_json/
+      │   ├── test_1_angle.json      : 이미지별 각도 결과
+      │   ├── test_2_angle.json
+      │   ├── test_3_angle.json
+      │   └── angle_all.json         : 통합 결과
       └── angle_img/
           ├── test_1_angle_vis.png   : 각도 시각화 이미지 (검은 배경 + 골격 + 노란 각도 레이블)
           ├── test_2_angle_vis.png
@@ -67,8 +68,9 @@ VISIBILITY_THRESHOLD: float = 0.65     # 이 미만 visibility → 신뢰 불가
 RESULTS_DIR   = _THIS_DIR.parent / "img_test" / "results"
 JOINT33_DIR   = RESULTS_DIR / "joint_33"
 LM_JSON_DIR   = JOINT33_DIR / "landmark_json"   # landmark JSON 전용 폴더
-ANGLE_DIR     = RESULTS_DIR / "angle"
-ANGLE_IMG_DIR = ANGLE_DIR / "angle_img"
+ANGLE_DIR      = RESULTS_DIR / "angle"
+ANGLE_JSON_DIR = ANGLE_DIR / "angle_json"
+ANGLE_IMG_DIR  = ANGLE_DIR / "angle_img"
 
 TEST_FILES: dict[str, Path] = {
     "test_1": LM_JSON_DIR / "test_1_landmarks.json",
@@ -464,6 +466,7 @@ def main() -> None:
 
     # 출력 디렉토리 생성
     ANGLE_DIR.mkdir(parents=True, exist_ok=True)
+    ANGLE_JSON_DIR.mkdir(parents=True, exist_ok=True)
     ANGLE_IMG_DIR.mkdir(parents=True, exist_ok=True)
 
     all_results: dict[str, dict] = {}
@@ -486,7 +489,7 @@ def main() -> None:
 
         # ── 개별 angle JSON 저장 ───────────────────────────────────────
         save_data = {k: v for k, v in result.items() if not k.startswith("_")}
-        per_path  = ANGLE_DIR / f"{test_name}_angle.json"
+        per_path  = ANGLE_JSON_DIR / f"{test_name}_angle.json"
         with per_path.open("w", encoding="utf-8") as f:
             json.dump(save_data, f, ensure_ascii=False, indent=2)
         print(f"  -> Angle JSON  : {per_path}")
@@ -504,7 +507,7 @@ def main() -> None:
         name: {k: v for k, v in res.items() if not k.startswith("_")}
         for name, res in all_results.items()
     }
-    all_path = ANGLE_DIR / "angle_all.json"
+    all_path = ANGLE_JSON_DIR / "angle_all.json"
     with all_path.open("w", encoding="utf-8") as f:
         json.dump(combined, f, ensure_ascii=False, indent=2)
     print(f"\n  -> Combined JSON: {all_path}")
