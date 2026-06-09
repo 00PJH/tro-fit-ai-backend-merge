@@ -1,6 +1,12 @@
 """
-angle_calculator_test.py — 관절 각도 계산 및 시각화 모듈
+angle_calculator_test_plus.py — 관절 각도 계산 및 시각화 모듈 (확장 버전)
 ==========================================================
+
+[추가된 관절]
+  - 고관절 굴곡 (Hip Flexion)
+  - 발목 배측굴곡 (Ankle Dorsiflexion)
+  - 어깨 외전 (Shoulder Abduction)
+  - 팔꿈치 굴곡 (Elbow Flexion)
 
 [저장 구조]
   results/
@@ -20,16 +26,18 @@ angle_calculator_test.py — 관절 각도 계산 및 시각화 모듈
           └── test_3_angle_vis.png
 
 [각도 정의]
-  - 무릎(Knee)    : Hip → Knee → Ankle
-  - 팔꿈치(Elbow) : Shoulder → Elbow → Wrist
-  - 어깨(Shoulder): Elbow → Shoulder → Hip
+  - 무릎(Knee)               : Hip → Knee → Ankle
+  - 팔꿈치(Elbow Flexion)    : Shoulder → Elbow → Wrist
+  - 어깨(Shoulder Abduction) : Elbow → Shoulder → Hip
+  - 고관절(Hip Flexion)      : Shoulder → Hip → Knee
+  - 발목(Ankle Dorsiflexion) : Knee → Ankle → Foot Index
 
 [시각화 이미지 스펙]
   - 검은 배경 (Black canvas)
   - 좌측 랜드마크 : 주황색 점 (BGR 0,140,255)
   - 우측 랜드마크 : 하늘색 점 (BGR 255,200,0)
   - 연결선        : 흰색 (255,255,255)
-  - 각도 레이블   : 노란색 (0,255,255 BGR) — knee/elbow/shoulder 관절에 표시
+  - 각도 레이블   : 노란색 (0,255,255 BGR) — 각 관절에 표시
 """
 
 from __future__ import annotations
@@ -222,7 +230,7 @@ def compute_knee_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list
 
 
 def compute_elbow_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
-    """팔꿈치: Shoulder — Elbow — Wrist (좌우)"""
+    """팔꿈치 굴곡: Shoulder — Elbow — Wrist (좌우)"""
     return [
         _compute(f"{side}_elbow",
                  get_lm(landmarks, shoulder), get_lm(landmarks, elbow), get_lm(landmarks, wrist),
@@ -235,7 +243,7 @@ def compute_elbow_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> lis
 
 
 def compute_shoulder_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
-    """어깨(거상): Elbow — Shoulder — Hip (좌우)"""
+    """어깨 외전/거상: Elbow — Shoulder — Hip (좌우)"""
     return [
         _compute(f"{side}_shoulder",
                  get_lm(landmarks, elbow), get_lm(landmarks, shoulder), get_lm(landmarks, hip),
@@ -247,6 +255,32 @@ def compute_shoulder_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> 
     ]
 
 
+def compute_hip_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
+    """고관절 굴곡: Shoulder — Hip — Knee (좌우)"""
+    return [
+        _compute(f"{side}_hip",
+                 get_lm(landmarks, shoulder), get_lm(landmarks, hip), get_lm(landmarks, knee),
+                 threshold)
+        for side, shoulder, hip, knee in [
+            ("left",  BPL.LEFT_SHOULDER,  BPL.LEFT_HIP,  BPL.LEFT_KNEE),
+            ("right", BPL.RIGHT_SHOULDER, BPL.RIGHT_HIP, BPL.RIGHT_KNEE),
+        ]
+    ]
+
+
+def compute_ankle_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
+    """발목 배측굴곡: Knee — Ankle — Foot Index (좌우)"""
+    return [
+        _compute(f"{side}_ankle",
+                 get_lm(landmarks, knee), get_lm(landmarks, ankle), get_lm(landmarks, foot_index),
+                 threshold)
+        for side, knee, ankle, foot_index in [
+            ("left",  BPL.LEFT_KNEE,  BPL.LEFT_ANKLE,  BPL.LEFT_FOOT_INDEX),
+            ("right", BPL.RIGHT_KNEE, BPL.RIGHT_ANKLE, BPL.RIGHT_FOOT_INDEX),
+        ]
+    ]
+
+
 def analyze_pose(pose: dict) -> PoseAngleReport:
     """단일 포즈 딕셔너리 -> PoseAngleReport."""
     lm = pose["landmarks"]
@@ -254,6 +288,8 @@ def analyze_pose(pose: dict) -> PoseAngleReport:
     report.joints.extend(compute_knee_angles(lm))
     report.joints.extend(compute_elbow_angles(lm))
     report.joints.extend(compute_shoulder_angles(lm))
+    report.joints.extend(compute_hip_angles(lm))
+    report.joints.extend(compute_ankle_angles(lm))
     return report
 
 
@@ -348,11 +384,6 @@ def build_angle_image(
 ) -> np.ndarray:
     """
     단일 포즈의 정규화 좌표를 사용하여 검은 배경 골격 + 각도 레이블 이미지를 생성합니다.
-
-    각도 레이블이 표시되는 관절(꼭짓점 기준):
-      - left_knee / right_knee   (무릎)
-      - left_elbow / right_elbow (팔꿈치)
-      - left_shoulder / right_shoulder (어깨)
     """
     canvas   = np.zeros((canvas_h, canvas_w, 3), dtype=np.uint8)
     landmarks = raw_pose["landmarks"]
@@ -399,6 +430,10 @@ def build_angle_image(
         "right_elbow":     BPL.RIGHT_ELBOW,
         "left_shoulder":   BPL.LEFT_SHOULDER,
         "right_shoulder":  BPL.RIGHT_SHOULDER,
+        "left_hip":        BPL.LEFT_HIP,
+        "right_hip":       BPL.RIGHT_HIP,
+        "left_ankle":      BPL.LEFT_ANKLE,
+        "right_ankle":     BPL.RIGHT_ANKLE,
     }
 
     drawn_boxes: list[tuple[int, int, int, int]] = []
@@ -443,8 +478,6 @@ def render_all_poses(
 ) -> None:
     """
     한 테스트 이미지의 모든 포즈에 대해 각도 시각화 이미지를 저장합니다.
-    포즈가 1개면: test_1_angle_vis.png
-    포즈가 여러 개면: test_1_pose0_angle_vis.png, test_1_pose1_angle_vis.png, ...
     """
     poses_raw = raw_data.get("poses", [])
     n = len(reports)
@@ -453,9 +486,9 @@ def render_all_poses(
         img = build_angle_image(raw_pose, report, canvas_w, canvas_h)
 
         if n == 1:
-            filename = f"{test_name}_angle_vis.png"
+            filename = f"{test_name}_angle_plus_vis.png"
         else:
-            filename = f"{test_name}_pose{i}_angle_vis.png"
+            filename = f"{test_name}_pose{i}_angle_plus_vis.png"
 
         out_path = out_dir / filename
         cv2.imwrite(str(out_path), img)
@@ -467,9 +500,11 @@ def render_all_poses(
 # ─────────────────────────────────────────────────────────────────────────────
 
 _SECTION = {
-    "knee":     "Knee     (Hip - Knee - Ankle)",
-    "elbow":    "Elbow    (Shoulder - Elbow - Wrist)",
-    "shoulder": "Shoulder (Elbow - Shoulder - Hip)",
+    "knee":     "Knee               (Hip - Knee - Ankle)",
+    "elbow":    "Elbow Flexion      (Shoulder - Elbow - Wrist)",
+    "shoulder": "Shoulder Abduction (Elbow - Shoulder - Hip)",
+    "hip":      "Hip Flexion        (Shoulder - Hip - Knee)",
+    "ankle":    "Ankle Dorsiflexion (Knee - Ankle - Foot Index)",
 }
 
 def print_report(test_name: str, result: dict) -> None:
@@ -499,7 +534,7 @@ def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    print("\n[Tro-Fit] Joint Angle Calculator - Test Run")
+    print("\n[Tro-Fit] Joint Angle Calculator PLUS - Test Run")
     print(f"  Project root : {_PROJECT_ROOT}")
     print(f"  Input dir    : {LM_JSON_DIR}")
     print(f"  Output dir   : {ANGLE_DIR}")
@@ -529,7 +564,7 @@ def main() -> None:
 
         # ── 개별 angle JSON 저장 ───────────────────────────────────────
         save_data = {k: v for k, v in result.items() if not k.startswith("_")}
-        per_path  = ANGLE_JSON_DIR / f"{test_name}_angle.json"
+        per_path  = ANGLE_JSON_DIR / f"{test_name}_angle_plus.json"
         with per_path.open("w", encoding="utf-8") as f:
             json.dump(save_data, f, ensure_ascii=False, indent=2)
         print(f"  -> Angle JSON  : {per_path}")
@@ -547,7 +582,7 @@ def main() -> None:
         name: {k: v for k, v in res.items() if not k.startswith("_")}
         for name, res in all_results.items()
     }
-    all_path = ANGLE_JSON_DIR / "angle_all.json"
+    all_path = ANGLE_JSON_DIR / "angle_all_plus.json"
     with all_path.open("w", encoding="utf-8") as f:
         json.dump(combined, f, ensure_ascii=False, indent=2)
     print(f"\n  -> Combined JSON: {all_path}")
