@@ -9,63 +9,9 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from pictographic_generator import generate_pictographic_svg
+from landmarks import BlazePoseLandmark, POSE_CONNECTIONS, LEFT_LANDMARKS, RIGHT_LANDMARKS
 
-# 33개 포즈 랜드마크 인덱스 쌍 정의 (BlazePose 연결 구조)
-POSE_CONNECTIONS = [
-    (0, 1), (1, 2), (2, 3), (3, 7),
-    (0, 4), (4, 5), (5, 6), (6, 8),
-    (9, 10),
-    (11, 12),
-    (11, 13), (13, 15),
-    (12, 14), (14, 16),
-    (15, 17), (15, 19), (15, 21), (17, 19),
-    (16, 18), (16, 20), (16, 22), (18, 20),
-    (11, 23), (12, 24),
-    (23, 24),
-    (23, 25), (25, 27), (27, 29), (29, 31), (27, 31),
-    (24, 26), (26, 28), (28, 30), (30, 32), (28, 32),
-]
 
-# 33개 랜드마크 이름 (인덱스 순서) - key에 띄어쓰기 대신 _ 사용
-LANDMARK_NAMES = [
-    "nose",               # 0
-    "left_eye_inner",     # 1
-    "left_eye",           # 2
-    "left_eye_outer",     # 3
-    "right_eye_inner",    # 4
-    "right_eye",          # 5
-    "right_eye_outer",    # 6
-    "left_ear",           # 7
-    "right_ear",          # 8
-    "mouth_left",         # 9
-    "mouth_right",        # 10
-    "left_shoulder",      # 11
-    "right_shoulder",     # 12
-    "left_elbow",         # 13
-    "right_elbow",        # 14
-    "left_wrist",         # 15
-    "right_wrist",        # 16
-    "left_pinky",         # 17
-    "right_pinky",        # 18
-    "left_index",         # 19
-    "right_index",        # 20
-    "left_thumb",         # 21
-    "right_thumb",        # 22
-    "left_hip",           # 23
-    "right_hip",          # 24
-    "left_knee",          # 25
-    "right_knee",         # 26
-    "left_ankle",         # 27
-    "right_ankle",        # 28
-    "left_heel",          # 29
-    "right_heel",         # 30
-    "left_foot_index",    # 31
-    "right_foot_index",   # 32
-]
-
-# 좌/우 랜드마크 분류 (시각화 색상 지정용)
-LEFT_LANDMARKS  = {1, 2, 3, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31}
-RIGHT_LANDMARKS = {4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32}
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -119,26 +65,14 @@ def draw_landmarks_on_image(image, detection_result, visibility_threshold=0.2):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 2. 관절 좌표 → JSON 직렬화 구조로 변환
+# 2. 관절 좌표 JSON 직렬화 구조로 변환
 # ──────────────────────────────────────────────────────────────────────────────
 def extract_landmarks_json(pose_landmarks_list, image_width, image_height):
     """
     감지된 포즈(들)의 33개 랜드마크 좌표를 JSON 직렬화 가능한 구조로 변환합니다.
-    key에 띄어쓰기가 없도록 LANDMARK_NAMES에서 _로 이미 처리되어 있습니다.
 
-    반환 형식:
-    [
-      {
-        "pose_index": 0,
-        "landmarks": {
-          "nose":          {"x": 0.5, "y": 0.3, "z": -0.1, "visibility": 0.99,
-                            "pixel_x": 320, "pixel_y": 144},
-          "left_shoulder": {...},
-          ...  (33개 모두 포함, 가시성 여부와 무관)
-        }
-      },
-      ...
-    ]
+    BlazePoseLandmark(idx).json_key() 로 JSON 키를 O(1) 에 확정합니다.
+    (기존 LANDMARK_NAMES[idx] 방식 대비 경계 검사와 replace(" ", "_")가 불필요)
     """
     poses_data = []
 
@@ -149,10 +83,10 @@ def extract_landmarks_json(pose_landmarks_list, image_width, image_height):
         landmarks_dict = {}
 
         for idx, landmark in enumerate(pose_landmarks):
-            # 이름에 띄어쓰기가 없도록 _ 처리된 LANDMARK_NAMES 사용
-            raw_name = LANDMARK_NAMES[idx] if idx < len(LANDMARK_NAMES) else f"landmark_{idx}"
-            # 혹시 남아있는 공백도 한 번 더 방어 처리
-            safe_name = raw_name.replace(" ", "_")
+            try:
+                safe_name = BlazePoseLandmark(idx).json_key()  # O(1) 변환
+            except ValueError:
+                safe_name = f"landmark_{idx}"                  # 33개 범위 밖 방어
 
             landmarks_dict[safe_name] = {
                 "x":          round(float(landmark.x), 6),
@@ -169,9 +103,6 @@ def extract_landmarks_json(pose_landmarks_list, image_width, image_height):
         })
 
     return poses_data
-
-
-
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -193,10 +124,10 @@ def main():
     print(f"Output Directory: {output_dir}")
 
     # ── PoseLandmarker 설정 ──
-    BaseOptions        = mp.tasks.BaseOptions
-    PoseLandmarker     = mp.tasks.vision.PoseLandmarker
+    BaseOptions           = mp.tasks.BaseOptions
+    PoseLandmarker        = mp.tasks.vision.PoseLandmarker
     PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
-    VisionRunningMode  = mp.tasks.vision.RunningMode
+    VisionRunningMode     = mp.tasks.vision.RunningMode
 
     options = PoseLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=model_path),
@@ -220,6 +151,19 @@ def main():
         return
 
     print(f"Found {len(image_paths)} images to process.")
+
+    # ── 출력 디렉토리 구조 생성 ──────────────────────────────────────────
+    # results/joint_33/
+    #   ├── landmark_json/ : 개별/통합 landmark JSON + CSV
+    #   └── joint_img/     : 관절 추출 결과 이미지
+    # results/pictographic/: 픽토그래픽 SVG 이미지
+    joint33_dir   = os.path.join(output_dir, "joint_33")
+    lm_json_dir   = os.path.join(joint33_dir, "landmark_json")
+    joint_img_dir = os.path.join(joint33_dir, "joint_img")
+    picto_dir     = os.path.join(output_dir, "pictographic")
+    os.makedirs(lm_json_dir,   exist_ok=True)
+    os.makedirs(joint_img_dir, exist_ok=True)
+    os.makedirs(picto_dir,     exist_ok=True)
 
     # 벤치마크 결과 보관용 리스트
     benchmark_data = []
@@ -245,9 +189,9 @@ def main():
             mp_image  = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_image)
 
             # 추론 시간 정밀 측정
-            start_time           = time.perf_counter()
+            start_time             = time.perf_counter()
             pose_landmarker_result = landmarker.detect(mp_image)
-            end_time             = time.perf_counter()
+            end_time               = time.perf_counter()
             inference_time_seconds = end_time - start_time
 
             # 감지된 포즈 수
@@ -264,13 +208,12 @@ def main():
                 pose_landmarker_result.pose_landmarks, w, h
             )
 
-            # key에 띄어쓰기가 없도록 파일명도 안전하게 처리
             safe_filename = filename.replace(" ", "_")
             all_landmarks_json[safe_filename] = {
-                "image_width":       w,
-                "image_height":      h,
+                "image_width":        w,
+                "image_height":       h,
                 "num_poses_detected": num_poses_detected,
-                "poses":             poses_landmark_data,
+                "poses":              poses_landmark_data,
             }
 
             # 관절 좌표 콘솔 출력 (첫 번째 포즈만 샘플)
@@ -280,29 +223,29 @@ def main():
                     print(f"     {name:25s}: x={data['x']:.4f}, y={data['y']:.4f}, "
                           f"z={data['z']:.4f}, vis={data['visibility']:.4f}")
 
-            # ── 이미지별 개별 JSON 저장 ──────────────────────────────────
-            base_name          = os.path.splitext(safe_filename)[0]
-            per_img_json_path  = os.path.join(output_dir, f"{base_name}_landmarks.json")
+            # ── 개별 landmark JSON → results/joint_33/landmark_json/ 저장 ─
+            base_name         = os.path.splitext(safe_filename)[0]
+            per_img_json_path = os.path.join(lm_json_dir, f"{base_name}_landmarks.json")
             try:
                 with open(per_img_json_path, mode="w", encoding="utf-8") as f:
                     json.dump(all_landmarks_json[safe_filename], f,
                               ensure_ascii=False, indent=2)
-                print(f"  -> JSON saved : {per_img_json_path}")
+                print(f"  -> JSON saved  : {per_img_json_path}")
             except Exception as e:
                 print(f"  Failed to write per-image JSON for {filename}: {e}")
 
             # ── 벤치마크 데이터 추가 ──────────────────────────────────────
             benchmark_data.append({
-                "image_name":           filename,
-                "width":                w,
-                "height":               h,
+                "image_name":             filename,
+                "width":                  w,
+                "height":                 h,
                 "inference_time_seconds": round(inference_time_seconds, 4),
-                "num_poses_detected":   num_poses_detected,
-                "hardware_delegate":    "CPU (TFLite XNNPACK)",
-                "model_name":           "pose_landmarker_full.task"
+                "num_poses_detected":     num_poses_detected,
+                "hardware_delegate":      "CPU (TFLite XNNPACK)",
+                "model_name":             "pose_landmarker_full.task"
             })
 
-            # ── 원본 이미지 위 랜드마크 시각화 ───────────────────────────
+            # ── 관절 시각화 이미지 → results/joint_33/joint_img/ 저장 ─────
             if num_poses_detected > 0:
                 annotated_image = draw_landmarks_on_image(
                     cv_image, pose_landmarker_result, visibility_threshold=0.2
@@ -311,14 +254,13 @@ def main():
                 print(f"  No pose landmarks detected in {filename}.")
                 annotated_image = cv_image
 
-            # 결과 이미지 저장
-            out_path = os.path.join(output_dir, filename)
+            out_path = os.path.join(joint_img_dir, filename)
             cv2.imwrite(out_path, annotated_image)
             print(f"  -> Annotated   : {out_path}")
 
-            # ── [기능 2] 픽토그래픽 SVG 벡터 이미지 생성 및 저장 ──────
+            # ── [기능 2] 픽토그래픽 SVG → results/pictographic/ 저장 ─────
             picto_filename = f"{base_name}_pictographic.svg"
-            picto_path     = os.path.join(output_dir, picto_filename)
+            picto_path     = os.path.join(picto_dir, picto_filename)
             generate_pictographic_svg(
                 poses_data=poses_landmark_data,
                 image_width=w,
@@ -326,10 +268,10 @@ def main():
                 output_path=picto_path,
                 visibility_threshold=0.2,
             )
-            print(f"  -> Pictographic SVG: {picto_path}")
+            print(f"  -> Pictographic: {picto_path}")
 
-    # ── CSV 파일 작성 ──────────────────────────────────────────────────
-    csv_path    = os.path.join(output_dir, "benchmark_results.csv")
+    # ── CSV → results/joint_33/landmark_json/ 저장 ───────────────────
+    csv_path    = os.path.join(lm_json_dir, "benchmark_results.csv")
     csv_headers = [
         "image_name", "width", "height",
         "inference_time_seconds", "num_poses_detected",
@@ -344,8 +286,8 @@ def main():
     except Exception as e:
         print(f"Failed to write CSV: {e}")
 
-    # ── 전체 통합 JSON 파일 저장 ───────────────────────────────────────
-    json_path = os.path.join(output_dir, "landmarks_all.json")
+    # ── 전체 통합 landmark JSON → results/joint_33/landmark_json/ 저장 ─
+    json_path = os.path.join(lm_json_dir, "landmarks_all.json")
     try:
         with open(json_path, mode="w", encoding="utf-8") as f:
             json.dump(all_landmarks_json, f, ensure_ascii=False, indent=2)
