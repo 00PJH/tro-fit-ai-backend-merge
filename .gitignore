@@ -17,6 +17,7 @@ src/vision_ai/mediapipe_rom_webcam_pipeline/results/
 
 # ── 비디오 테스트 소스 제외 (대용량 파일) ───────────────────────────────────────
 src/vision_ai/mediapipe_rom_webcam_pipeline/videos/*.mp4
+!src/vision_ai/mediapipe_rom_webcam_pipeline/videos/shoulder_test.mp4
 src/vision_ai/mediapipe_rom_webcam_pipeline/videos/*.avi
 src/vision_ai/mediapipe_rom_webcam_pipeline/videos/*.mov
 
