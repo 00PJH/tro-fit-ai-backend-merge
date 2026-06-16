@@ -1,0 +1,46 @@
+{
+  "_comment": "AMA 기준 정상 관절가동범위 데이터. 출처: 이재학(1996), 국민연금공단 AMA식 표준각도.",
+  "_usage": "joint_key = '{joint}_{movement}' 형태로 접근. 예: shoulder_flexion",
+  "shoulder_flexion": {
+    "normal_deg": 150,
+    "view": "lateral",
+    "landmarks": ["hip", "shoulder", "elbow"],
+    "description": "어깨 굴곡 - 팔을 앞쪽으로 들어올리는 동작"
+  },
+  "shoulder_extension": {
+    "normal_deg": 40,
+    "view": "lateral",
+    "landmarks": ["hip", "shoulder", "elbow"],
+    "description": "어깨 신전 - 팔을 뒤쪽으로 올리는 동작"
+  },
+  "shoulder_abduction": {
+    "normal_deg": 150,
+    "view": "frontal",
+    "landmarks": ["hip", "shoulder", "elbow"],
+    "description": "어깨 외전 - 팔을 옆으로 들어올리는 동작"
+  },
+  "elbow_flexion": {
+    "normal_deg": 150,
+    "view": "lateral",
+    "landmarks": ["shoulder", "elbow", "wrist"],
+    "description": "팔꿈치 굴곡 - 팔꿈치를 구부리는 동작"
+  },
+  "elbow_extension": {
+    "normal_deg": 0,
+    "view": "lateral",
+    "landmarks": ["shoulder", "elbow", "wrist"],
+    "description": "팔꿈치 신전 - 팔꿈치를 완전히 펴는 동작"
+  },
+  "knee_flexion": {
+    "normal_deg": 150,
+    "view": "lateral",
+    "landmarks": ["hip", "knee", "ankle"],
+    "description": "무릎 굴곡 - 무릎을 구부리는 동작"
+  },
+  "knee_extension": {
+    "normal_deg": 0,
+    "view": "lateral",
+    "landmarks": ["hip", "knee", "ankle"],
+    "description": "무릎 신전 - 무릎을 완전히 펴는 동작"
+  }
+}

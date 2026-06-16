@@ -1,0 +1,4 @@
+Cannot find module `mediapipe.tasks.python`
+  Looked in these locations:
+  Fallback search path (guessed from importing file with heuristics): ["c:\\workspace\\trofit", "c:\\workspace\\trofit\\src\\vision_ai\\benchmark", "c:\\workspace\\trofit\\src\\vision_ai", "c:\\workspace\\trofit\\src", "c:\\workspace\\trofit", "c:\\workspace", "c:\\"]
+  Site package path queried from interpreter: ["C:\\Users\\박준형\\AppData\\Local\\Programs\\Python\\Python311\\DLLs", "C:\\Users\\박준형\\AppData\\Roaming\\Python\\Python311\\site-packages", "C:\\Users\\박준형\\AppData\\Local\\Programs\\Python\\Python311", "C:\\Users\\박준형\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages", "C:\\Users\\박준형\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\win32", "C:\\Users\\박준형\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\win32\\lib", "C:\\Users\\박준형\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\Pythonwin"]

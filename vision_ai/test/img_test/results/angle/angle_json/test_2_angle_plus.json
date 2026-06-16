@@ -1,0 +1,124 @@
+{
+  "source_file": "test_2_landmarks.json",
+  "image_width": 420,
+  "image_height": 632,
+  "num_poses_detected": 1,
+  "visibility_threshold": 0.65,
+  "poses": [
+    {
+      "pose_index": 0,
+      "joints": [
+        {
+          "joint": "left_knee",
+          "angle_deg": 92.02647196759823,
+          "reliable": true,
+          "point_a": "left_hip",
+          "vertex": "left_knee",
+          "point_c": "left_ankle",
+          "visibility_a": 0.999492,
+          "visibility_v": 0.986559,
+          "visibility_c": 0.988139
+        },
+        {
+          "joint": "right_knee",
+          "angle_deg": 111.47935152436017,
+          "reliable": true,
+          "point_a": "right_hip",
+          "vertex": "right_knee",
+          "point_c": "right_ankle",
+          "visibility_a": 0.999525,
+          "visibility_v": 0.988669,
+          "visibility_c": 0.989032
+        },
+        {
+          "joint": "left_elbow",
+          "angle_deg": 150.98373198872753,
+          "reliable": true,
+          "point_a": "left_shoulder",
+          "vertex": "left_elbow",
+          "point_c": "left_wrist",
+          "visibility_a": 0.999265,
+          "visibility_v": 0.969179,
+          "visibility_c": 0.936549
+        },
+        {
+          "joint": "right_elbow",
+          "angle_deg": 151.60676525864446,
+          "reliable": true,
+          "point_a": "right_shoulder",
+          "vertex": "right_elbow",
+          "point_c": "right_wrist",
+          "visibility_a": 0.999188,
+          "visibility_v": 0.857501,
+          "visibility_c": 0.918939
+        },
+        {
+          "joint": "left_shoulder",
+          "angle_deg": 106.64538973546436,
+          "reliable": true,
+          "point_a": "left_elbow",
+          "vertex": "left_shoulder",
+          "point_c": "left_hip",
+          "visibility_a": 0.969179,
+          "visibility_v": 0.999265,
+          "visibility_c": 0.999492
+        },
+        {
+          "joint": "right_shoulder",
+          "angle_deg": 59.75407141897499,
+          "reliable": true,
+          "point_a": "right_elbow",
+          "vertex": "right_shoulder",
+          "point_c": "right_hip",
+          "visibility_a": 0.857501,
+          "visibility_v": 0.999188,
+          "visibility_c": 0.999525
+        },
+        {
+          "joint": "left_hip",
+          "angle_deg": 121.97907108633774,
+          "reliable": true,
+          "point_a": "left_shoulder",
+          "vertex": "left_hip",
+          "point_c": "left_knee",
+          "visibility_a": 0.999265,
+          "visibility_v": 0.999492,
+          "visibility_c": 0.986559
+        },
+        {
+          "joint": "right_hip",
+          "angle_deg": 159.68804584165517,
+          "reliable": true,
+          "point_a": "right_shoulder",
+          "vertex": "right_hip",
+          "point_c": "right_knee",
+          "visibility_a": 0.999188,
+          "visibility_v": 0.999525,
+          "visibility_c": 0.988669
+        },
+        {
+          "joint": "left_ankle",
+          "angle_deg": 31.237121218731744,
+          "reliable": true,
+          "point_a": "left_knee",
+          "vertex": "left_ankle",
+          "point_c": "left_foot_index",
+          "visibility_a": 0.986559,
+          "visibility_v": 0.988139,
+          "visibility_c": 0.986314
+        },
+        {
+          "joint": "right_ankle",
+          "angle_deg": 36.508986594754845,
+          "reliable": true,
+          "point_a": "right_knee",
+          "vertex": "right_ankle",
+          "point_c": "right_foot_index",
+          "visibility_a": 0.988669,
+          "visibility_v": 0.989032,
+          "visibility_c": 0.983461
+        }
+      ]
+    }
+  ]
+}

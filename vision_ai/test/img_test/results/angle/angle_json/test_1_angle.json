@@ -1,0 +1,151 @@
+{
+  "source_file": "test_1_landmarks.json",
+  "image_width": 600,
+  "image_height": 477,
+  "num_poses_detected": 2,
+  "visibility_threshold": 0.65,
+  "poses": [
+    {
+      "pose_index": 0,
+      "joints": [
+        {
+          "joint": "left_knee",
+          "angle_deg": 110.67859108499567,
+          "reliable": true,
+          "point_a": "left_hip",
+          "vertex": "left_knee",
+          "point_c": "left_ankle",
+          "visibility_a": 0.999262,
+          "visibility_v": 0.990969,
+          "visibility_c": 0.987001
+        },
+        {
+          "joint": "right_knee",
+          "angle_deg": 104.97622575587589,
+          "reliable": true,
+          "point_a": "right_hip",
+          "vertex": "right_knee",
+          "point_c": "right_ankle",
+          "visibility_a": 0.99966,
+          "visibility_v": 0.994323,
+          "visibility_c": 0.992253
+        },
+        {
+          "joint": "left_elbow",
+          "angle_deg": 120.4465304699685,
+          "reliable": true,
+          "point_a": "left_shoulder",
+          "vertex": "left_elbow",
+          "point_c": "left_wrist",
+          "visibility_a": 0.999956,
+          "visibility_v": 0.997605,
+          "visibility_c": 0.985032
+        },
+        {
+          "joint": "right_elbow",
+          "angle_deg": 135.35023708505898,
+          "reliable": true,
+          "point_a": "right_shoulder",
+          "vertex": "right_elbow",
+          "point_c": "right_wrist",
+          "visibility_a": 0.999894,
+          "visibility_v": 0.9981,
+          "visibility_c": 0.983416
+        },
+        {
+          "joint": "left_shoulder",
+          "angle_deg": 73.40725042204667,
+          "reliable": true,
+          "point_a": "left_elbow",
+          "vertex": "left_shoulder",
+          "point_c": "left_hip",
+          "visibility_a": 0.997605,
+          "visibility_v": 0.999956,
+          "visibility_c": 0.999262
+        },
+        {
+          "joint": "right_shoulder",
+          "angle_deg": 168.53892678574616,
+          "reliable": true,
+          "point_a": "right_elbow",
+          "vertex": "right_shoulder",
+          "point_c": "right_hip",
+          "visibility_a": 0.9981,
+          "visibility_v": 0.999894,
+          "visibility_c": 0.99966
+        }
+      ]
+    },
+    {
+      "pose_index": 1,
+      "joints": [
+        {
+          "joint": "left_knee",
+          "angle_deg": 131.32854043344665,
+          "reliable": true,
+          "point_a": "left_hip",
+          "vertex": "left_knee",
+          "point_c": "left_ankle",
+          "visibility_a": 0.999918,
+          "visibility_v": 0.992407,
+          "visibility_c": 0.993474
+        },
+        {
+          "joint": "right_knee",
+          "angle_deg": 138.79394194167168,
+          "reliable": true,
+          "point_a": "right_hip",
+          "vertex": "right_knee",
+          "point_c": "right_ankle",
+          "visibility_a": 0.999901,
+          "visibility_v": 0.992454,
+          "visibility_c": 0.990738
+        },
+        {
+          "joint": "left_elbow",
+          "angle_deg": 105.25281443846096,
+          "reliable": true,
+          "point_a": "left_shoulder",
+          "vertex": "left_elbow",
+          "point_c": "left_wrist",
+          "visibility_a": 0.999816,
+          "visibility_v": 0.996682,
+          "visibility_c": 0.985
+        },
+        {
+          "joint": "right_elbow",
+          "angle_deg": 120.1946682463165,
+          "reliable": true,
+          "point_a": "right_shoulder",
+          "vertex": "right_elbow",
+          "point_c": "right_wrist",
+          "visibility_a": 0.999904,
+          "visibility_v": 0.9956,
+          "visibility_c": 0.989887
+        },
+        {
+          "joint": "left_shoulder",
+          "angle_deg": 176.94317409286214,
+          "reliable": true,
+          "point_a": "left_elbow",
+          "vertex": "left_shoulder",
+          "point_c": "left_hip",
+          "visibility_a": 0.996682,
+          "visibility_v": 0.999816,
+          "visibility_c": 0.999918
+        },
+        {
+          "joint": "right_shoulder",
+          "angle_deg": 67.88985210516579,
+          "reliable": true,
+          "point_a": "right_elbow",
+          "vertex": "right_shoulder",
+          "point_c": "right_hip",
+          "visibility_a": 0.9956,
+          "visibility_v": 0.999904,
+          "visibility_c": 0.999901
+        }
+      ]
+    }
+  ]
+}

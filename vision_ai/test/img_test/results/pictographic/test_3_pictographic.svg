@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="612" height="408" viewBox="0 0 612 408">
+  <rect width="612" height="408" fill="#0D1117" />
+  <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M 270.00,194.00 L 230.00,191.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 270.00,194.00 L 264.00,246.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 264.00,246.00 L 231.00,276.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 230.00,191.00 L 220.00,233.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 220.00,233.00 L 200.00,270.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 270.00,194.00 L 297.00,272.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 230.00,191.00 L 263.00,276.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 297.00,272.00 L 263.00,276.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 297.00,272.00 L 359.00,315.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 359.00,315.00 L 419.00,357.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 263.00,276.00 L 200.00,292.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 200.00,292.00 L 228.00,359.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 419.00,357.00 L 427.00,376.00" stroke="#00E5FF" stroke-width="15.50" />
+    <path d="M 228.00,359.00 L 199.00,378.00" stroke="#00E5FF" stroke-width="15.50" />
+  </g>
+  <g>
+    <circle cx="229.00" cy="158.00" r="19.58" fill="#00E5FF" />
+  </g>
+</svg>
