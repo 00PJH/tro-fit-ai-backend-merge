@@ -1,43 +1,43 @@
-"""
-angle_calculator_test_plus.py — 관절 각도 계산 및 시각화 모듈 (확장 버전)
+﻿"""
+angle_calculator_test_plus.py ??愿??媛곷룄 怨꾩궛 諛??쒓컖??紐⑤뱢 (?뺤옣 踰꾩쟾)
 ==========================================================
 
-[추가된 관절]
-  - 고관절 굴곡 (Hip Flexion)
-  - 발목 배측굴곡 (Ankle Dorsiflexion)
-  - 어깨 외전 (Shoulder Abduction)
-  - 팔꿈치 굴곡 (Elbow Flexion)
+[異붽???愿??
+  - 怨좉???援닿끝 (Hip Flexion)
+  - 諛쒕ぉ 諛곗륫援닿끝 (Ankle Dorsiflexion)
+  - ?닿묠 ?몄쟾 (Shoulder Abduction)
+  - ?붽퓞移?援닿끝 (Elbow Flexion)
 
-[저장 구조]
+[???援ъ“]
   results/
-  ├── joint_33/
-  │   ├── landmark_json/   : pose_test.py 가 생성 (개별/통합 landmark JSON + CSV)
-  │   └── joint_img/       : pose_test.py 가 생성 (관절 추출 결과 이미지)
-  ├── pictographic/        : pose_test.py 가 생성 (SVG 픽토그래픽)
-  └── angle/
-      ├── angle_json/
-      │   ├── test_1_angle.json      : 이미지별 각도 결과
-      │   ├── test_2_angle.json
-      │   ├── test_3_angle.json
-      │   └── angle_all.json         : 통합 결과
-      └── angle_img/
-          ├── test_1_angle_vis.png   : 각도 시각화 이미지 (검은 배경 + 골격 + 노란 각도 레이블)
-          ├── test_2_angle_vis.png
-          └── test_3_angle_vis.png
+  ?쒋?? joint_33/
+  ??  ?쒋?? landmark_json/   : pose_test.py 媛 ?앹꽦 (媛쒕퀎/?듯빀 landmark JSON + CSV)
+  ??  ?붴?? joint_img/       : pose_test.py 媛 ?앹꽦 (愿??異붿텧 寃곌낵 ?대?吏)
+  ?쒋?? pictographic/        : pose_test.py 媛 ?앹꽦 (SVG ?쏀넗洹몃옒??
+  ?붴?? angle/
+      ?쒋?? angle_json/
+      ??  ?쒋?? test_1_angle.json      : ?대?吏蹂?媛곷룄 寃곌낵
+      ??  ?쒋?? test_2_angle.json
+      ??  ?쒋?? test_3_angle.json
+      ??  ?붴?? angle_all.json         : ?듯빀 寃곌낵
+      ?붴?? angle_img/
+          ?쒋?? test_1_angle_vis.png   : 媛곷룄 ?쒓컖???대?吏 (寃? 諛곌꼍 + 怨④꺽 + ?몃? 媛곷룄 ?덉씠釉?
+          ?쒋?? test_2_angle_vis.png
+          ?붴?? test_3_angle_vis.png
 
-[각도 정의]
-  - 무릎(Knee)               : Hip → Knee → Ankle
-  - 팔꿈치(Elbow Flexion)    : Shoulder → Elbow → Wrist
-  - 어깨(Shoulder Abduction) : Elbow → Shoulder → Hip
-  - 고관절(Hip Flexion)      : Shoulder → Hip → Knee
-  - 발목(Ankle Dorsiflexion) : Knee → Ankle → Foot Index
+[媛곷룄 ?뺤쓽]
+  - 臾대쫷(Knee)               : Hip ??Knee ??Ankle
+  - ?붽퓞移?Elbow Flexion)    : Shoulder ??Elbow ??Wrist
+  - ?닿묠(Shoulder Abduction) : Elbow ??Shoulder ??Hip
+  - 怨좉???Hip Flexion)      : Shoulder ??Hip ??Knee
+  - 諛쒕ぉ(Ankle Dorsiflexion) : Knee ??Ankle ??Foot Index
 
-[시각화 이미지 스펙]
-  - 검은 배경 (Black canvas)
-  - 좌측 랜드마크 : 주황색 점 (BGR 0,140,255)
-  - 우측 랜드마크 : 하늘색 점 (BGR 255,200,0)
-  - 연결선        : 흰색 (255,255,255)
-  - 각도 레이블   : 노란색 (0,255,255 BGR) — 각 관절에 표시
+[?쒓컖???대?吏 ?ㅽ럺]
+  - 寃? 諛곌꼍 (Black canvas)
+  - 醫뚯륫 ?쒕뱶留덊겕 : 二쇳솴????(BGR 0,140,255)
+  - ?곗륫 ?쒕뱶留덊겕 : ?섎뒛????(BGR 255,200,0)
+  - ?곌껐??       : ?곗깋 (255,255,255)
+  - 媛곷룄 ?덉씠釉?  : ?몃???(0,255,255 BGR) ??媛?愿?덉뿉 ?쒖떆
 """
 
 from __future__ import annotations
@@ -47,12 +47,12 @@ import math
 import sys
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import cv2
 import numpy as np
 
-# ── 절대 경로 기반 프로젝트 루트 추가 ─────────────────────────────────────
+# ?? ?덈? 寃쎈줈 湲곕컲 ?꾨줈?앺듃 猷⑦듃 異붽? ?????????????????????????????????????
 _THIS_DIR     = Path(__file__).resolve().parent
 _PROJECT_ROOT = (_THIS_DIR / ".." / ".." / "..").resolve()
 if str(_PROJECT_ROOT) not in sys.path:
@@ -65,17 +65,17 @@ from src.vision_ai.media_pipe_test.landmarks import (
     RIGHT_LANDMARKS,
 )
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 상수 및 경로 설정
-# ─────────────────────────────────────────────────────────────────────────────
+# ?????????????????????????????????????????????????????????????????????????????
+# ?곸닔 諛?寃쎈줈 ?ㅼ젙
+# ?????????????????????????????????????????????????????????????????????????????
 
-VISIBILITY_THRESHOLD: float = 0.65     # 이 미만 visibility → 신뢰 불가
+VISIBILITY_THRESHOLD: float = 0.65     # ??誘몃쭔 visibility ???좊ː 遺덇?
 
-# 입력 데이터: pose_test.py 가 생성한 landmark JSON 위치
+# ?낅젰 ?곗씠?? pose_test.py 媛 ?앹꽦??landmark JSON ?꾩튂
 #   results/joint_33/landmark_json/test_X_landmarks.json
 RESULTS_DIR   = _THIS_DIR.parent / "img_test" / "results"
 JOINT33_DIR   = RESULTS_DIR / "joint_33"
-LM_JSON_DIR   = JOINT33_DIR / "landmark_json"   # landmark JSON 전용 폴더
+LM_JSON_DIR   = JOINT33_DIR / "landmark_json"   # landmark JSON ?꾩슜 ?대뜑
 ANGLE_DIR      = RESULTS_DIR / "angle"
 ANGLE_JSON_DIR = ANGLE_DIR / "angle_json"
 ANGLE_IMG_DIR  = ANGLE_DIR / "angle_img"
@@ -86,30 +86,30 @@ TEST_FILES: dict[str, Path] = {
     "test_3": LM_JSON_DIR / "test_3_landmarks.json",
 }
 
-# 시각화 이미지 캔버스 크기 (정규화 좌표를 이 크기로 스케일)
+# ?쒓컖???대?吏 罹붾쾭???ш린 (?뺢퇋??醫뚰몴瑜????ш린濡??ㅼ???
 CANVAS_W = 640
 CANVAS_H = 640
-PADDING  = 60   # 외곽 여백 (정규화 좌표가 0~1 이므로 여백으로 공간 확보)
+PADDING  = 60   # ?멸낸 ?щ갚 (?뺢퇋??醫뚰몴媛 0~1 ?대?濡??щ갚?쇰줈 怨듦컙 ?뺣낫)
 
-# 색상 (BGR)
-COLOR_LEFT_PT   = (0,   140, 255)   # 주황색 — 좌측 관절
-COLOR_RIGHT_PT  = (255, 200,   0)   # 하늘색 — 우측 관절
-COLOR_OTHER_PT  = (255, 255, 255)   # 흰색   — 코 등 중립 관절
-COLOR_LINE      = (255, 255, 255)   # 흰색 연결선
-COLOR_LABEL     = (  0, 255, 255)   # 노란색 각도 레이블
-COLOR_LABEL_BG  = (  0,   0,   0)   # 검은 배경 (캔버스 자체)
+# ?됱긽 (BGR)
+COLOR_LEFT_PT   = (0,   140, 255)   # 二쇳솴????醫뚯륫 愿??
+COLOR_RIGHT_PT  = (255, 200,   0)   # ?섎뒛?????곗륫 愿??
+COLOR_OTHER_PT  = (255, 255, 255)   # ?곗깋   ??肄???以묐┰ 愿??
+COLOR_LINE      = (255, 255, 255)   # ?곗깋 ?곌껐??
+COLOR_LABEL     = (  0, 255, 255)   # ?몃???媛곷룄 ?덉씠釉?
+COLOR_LABEL_BG  = (  0,   0,   0)   # 寃? 諛곌꼍 (罹붾쾭???먯껜)
 
 FONT            = cv2.FONT_HERSHEY_SIMPLEX
 FONT_SCALE      = 0.5
 FONT_THICKNESS  = 1
-LABEL_PADDING   = 4   # 레이블 텍스트 배경 패딩
+LABEL_PADDING   = 4   # ?덉씠釉??띿뒪??諛곌꼍 ?⑤뵫
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 데이터 구조
-# ─────────────────────────────────────────────────────────────────────────────
+# ?????????????????????????????????????????????????????????????????????????????
+# ?곗씠??援ъ“
+# ?????????????????????????????????????????????????????????????????????????????
 
 class LandmarkPoint(NamedTuple):
-    """단일 랜드마크의 3D 좌표와 신뢰도."""
+    """?⑥씪 ?쒕뱶留덊겕??3D 醫뚰몴? ?좊ː??"""
     x: float
     y: float
     z: float
@@ -119,9 +119,9 @@ class LandmarkPoint(NamedTuple):
 
 @dataclass
 class JointAngleResult:
-    """관절 하나의 각도 계산 결과."""
+    """愿???섎굹??媛곷룄 怨꾩궛 寃곌낵."""
     joint:        str
-    angle_deg:    float | None   # None = visibility 미달
+    angle_deg:    float | None   # None = visibility 誘몃떖
     reliable:     bool
     point_a:      str   = ""
     vertex:       str   = ""
@@ -140,7 +140,7 @@ class JointAngleResult:
 
 @dataclass
 class PoseAngleReport:
-    """한 Pose의 전체 관절 각도 리포트."""
+    """??Pose???꾩껜 愿??媛곷룄 由ы룷??"""
     pose_index: int
     joints: list[JointAngleResult] = field(default_factory=list)
 
@@ -151,9 +151,9 @@ class PoseAngleReport:
         }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 핵심 수학 엔진
-# ─────────────────────────────────────────────────────────────────────────────
+# ?????????????????????????????????????????????????????????????????????????????
+# ?듭떖 ?섑븰 ?붿쭊
+# ?????????????????????????????????????????????????????????????????????????????
 
 def calculate_angle_3d(
     point_a: LandmarkPoint,
@@ -161,8 +161,8 @@ def calculate_angle_3d(
     point_c: LandmarkPoint,
 ) -> float:
     """
-    3D 벡터 내적으로 vertex를 꼭짓점으로 하는 A-Vertex-C 사이각(도)을 반환합니다.
-    수치 안정성: 동일 좌표 방어(1e-9), arccos 클리핑[-1,1].
+    3D 踰≫꽣 ?댁쟻?쇰줈 vertex瑜?瑗?쭞?먯쑝濡??섎뒗 A-Vertex-C ?ъ씠媛?????諛섑솚?⑸땲??
+    ?섏튂 ?덉젙?? ?숈씪 醫뚰몴 諛⑹뼱(1e-9), arccos ?대━??-1,1].
     """
     a = np.array([point_a.x, point_a.y, point_a.z], dtype=np.float64)
     v = np.array([vertex.x,  vertex.y,  vertex.z],  dtype=np.float64)
@@ -178,9 +178,9 @@ def calculate_angle_3d(
     return math.degrees(math.acos(cos_a))
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 랜드마크 파싱
-# ─────────────────────────────────────────────────────────────────────────────
+# ?????????????????????????????????????????????????????????????????????????????
+# ?쒕뱶留덊겕 ?뚯떛
+# ?????????????????????????????????????????????????????????????????????????????
 
 def _parse(raw: dict, name: str) -> LandmarkPoint:
     return LandmarkPoint(
@@ -189,21 +189,21 @@ def _parse(raw: dict, name: str) -> LandmarkPoint:
     )
 
 def get_lm(landmarks: dict[str, dict], lm: BPL) -> LandmarkPoint:
-    """BlazePoseLandmark enum으로 랜드마크를 가져옵니다 (SSOT 연동)."""
+    """BlazePoseLandmark enum?쇰줈 ?쒕뱶留덊겕瑜?媛?몄샃?덈떎 (SSOT ?곕룞)."""
     key = lm.json_key()
     return _parse(landmarks[key], key)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 관절별 각도 계산
-# ─────────────────────────────────────────────────────────────────────────────
+# ?????????????????????????????????????????????????????????????????????????????
+# 愿?덈퀎 媛곷룄 怨꾩궛
+# ?????????????????????????????????????????????????????????????????????????????
 
 def _compute(
     joint_name: str,
     lm_a: LandmarkPoint, lm_v: LandmarkPoint, lm_c: LandmarkPoint,
     threshold: float = VISIBILITY_THRESHOLD,
 ) -> JointAngleResult:
-    """visibility 검증 후 각도 계산. 미달 시 reliable=False 반환."""
+    """visibility 寃利???媛곷룄 怨꾩궛. 誘몃떖 ??reliable=False 諛섑솚."""
     res = JointAngleResult(
         joint=joint_name, angle_deg=None, reliable=False,
         point_a=lm_a.name, vertex=lm_v.name, point_c=lm_c.name,
@@ -217,7 +217,7 @@ def _compute(
 
 
 def compute_knee_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
-    """무릎: Hip — Knee — Ankle (좌우)"""
+    """臾대쫷: Hip ??Knee ??Ankle (醫뚯슦)"""
     return [
         _compute(f"{side}_knee",
                  get_lm(landmarks, hip), get_lm(landmarks, knee), get_lm(landmarks, ankle),
@@ -230,7 +230,7 @@ def compute_knee_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list
 
 
 def compute_elbow_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
-    """팔꿈치 굴곡: Shoulder — Elbow — Wrist (좌우)"""
+    """?붽퓞移?援닿끝: Shoulder ??Elbow ??Wrist (醫뚯슦)"""
     return [
         _compute(f"{side}_elbow",
                  get_lm(landmarks, shoulder), get_lm(landmarks, elbow), get_lm(landmarks, wrist),
@@ -243,7 +243,7 @@ def compute_elbow_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> lis
 
 
 def compute_shoulder_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
-    """어깨 외전/거상: Elbow — Shoulder — Hip (좌우)"""
+    """?닿묠 ?몄쟾/嫄곗긽: Elbow ??Shoulder ??Hip (醫뚯슦)"""
     return [
         _compute(f"{side}_shoulder",
                  get_lm(landmarks, elbow), get_lm(landmarks, shoulder), get_lm(landmarks, hip),
@@ -256,7 +256,7 @@ def compute_shoulder_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> 
 
 
 def compute_hip_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
-    """고관절 굴곡: Shoulder — Hip — Knee (좌우)"""
+    """怨좉???援닿끝: Shoulder ??Hip ??Knee (醫뚯슦)"""
     return [
         _compute(f"{side}_hip",
                  get_lm(landmarks, shoulder), get_lm(landmarks, hip), get_lm(landmarks, knee),
@@ -269,7 +269,7 @@ def compute_hip_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[
 
 
 def compute_ankle_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> list[JointAngleResult]:
-    """발목 배측굴곡: Knee — Ankle — Foot Index (좌우)"""
+    """諛쒕ぉ 諛곗륫援닿끝: Knee ??Ankle ??Foot Index (醫뚯슦)"""
     return [
         _compute(f"{side}_ankle",
                  get_lm(landmarks, knee), get_lm(landmarks, ankle), get_lm(landmarks, foot_index),
@@ -282,7 +282,7 @@ def compute_ankle_angles(landmarks: dict, threshold=VISIBILITY_THRESHOLD) -> lis
 
 
 def analyze_pose(pose: dict) -> PoseAngleReport:
-    """단일 포즈 딕셔너리 -> PoseAngleReport."""
+    """?⑥씪 ?ъ쫰 ?뺤뀛?덈━ -> PoseAngleReport."""
     lm = pose["landmarks"]
     report = PoseAngleReport(pose_index=pose["pose_index"])
     report.joints.extend(compute_knee_angles(lm))
@@ -294,7 +294,7 @@ def analyze_pose(pose: dict) -> PoseAngleReport:
 
 
 def analyze_file(json_path: Path) -> dict:
-    """JSON 파일 하나를 분석하여 구조화된 결과 딕셔너리 반환."""
+    """JSON ?뚯씪 ?섎굹瑜?遺꾩꽍?섏뿬 援ъ“?붾맂 寃곌낵 ?뺤뀛?덈━ 諛섑솚."""
     with json_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
     reports = [analyze_pose(p) for p in data.get("poses", [])]
@@ -305,18 +305,18 @@ def analyze_file(json_path: Path) -> dict:
         "num_poses_detected":   data.get("num_poses_detected", len(reports)),
         "visibility_threshold": VISIBILITY_THRESHOLD,
         "poses":                [r.to_dict() for r in reports],
-        "_reports":             reports,   # 콘솔/시각화용 (저장 시 제외)
-        "_raw":                 data,      # 시각화 좌표 참조용 (저장 시 제외)
+        "_reports":             reports,   # 肄섏넄/?쒓컖?붿슜 (??????쒖쇅)
+        "_raw":                 data,      # ?쒓컖??醫뚰몴 李몄“??(??????쒖쇅)
     }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 시각화: 검은 배경 골격 이미지 + 노란색 각도 레이블
-# ─────────────────────────────────────────────────────────────────────────────
+# ?????????????????????????????????????????????????????????????????????????????
+# ?쒓컖?? 寃? 諛곌꼍 怨④꺽 ?대?吏 + ?몃???媛곷룄 ?덉씠釉?
+# ?????????????????????????????????????????????????????????????????????????????
 
 def _norm_to_pixel(nx: float, ny: float, w: int, h: int,
                    pad: int = PADDING) -> tuple[int, int]:
-    """정규화 좌표(0~1) → 패딩이 적용된 캔버스 픽셀 좌표."""
+    """?뺢퇋??醫뚰몴(0~1) ???⑤뵫???곸슜??罹붾쾭???쎌? 醫뚰몴."""
     inner_w = w - 2 * pad
     inner_h = h - 2 * pad
     px = int(nx * inner_w) + pad
@@ -326,9 +326,9 @@ def _norm_to_pixel(nx: float, ny: float, w: int, h: int,
 
 def _draw_label(canvas: np.ndarray, text: str, pt: tuple[int, int], drawn_boxes: list[tuple[int, int, int, int]] | None = None) -> None:
     """
-    노란 글씨 + 반투명 검은 배경 박스로 각도 레이블을 그립니다.
-    텍스트가 캔버스 밖으로 나가지 않도록 자동 클리핑하며,
-    drawn_boxes 리스트가 주어지면 기존 상자와 겹치지 않게 위치를 조정합니다.
+    ?몃? 湲??+ 諛섑닾紐?寃? 諛곌꼍 諛뺤뒪濡?媛곷룄 ?덉씠釉붿쓣 洹몃┰?덈떎.
+    ?띿뒪?멸? 罹붾쾭??諛뽰쑝濡??섍?吏 ?딅룄濡??먮룞 ?대━?묓븯硫?
+    drawn_boxes 由ъ뒪?멸? 二쇱뼱吏硫?湲곗〈 ?곸옄? 寃뱀튂吏 ?딄쾶 ?꾩튂瑜?議곗젙?⑸땲??
     """
     (tw, th), _ = cv2.getTextSize(text, FONT, FONT_SCALE, FONT_THICKNESS)
     x, y = pt
@@ -350,10 +350,10 @@ def _draw_label(canvas: np.ndarray, text: str, pt: tuple[int, int], drawn_boxes:
             if not collision:
                 break
                 
-            # 겹치면 아래로 이동
+            # 寃뱀튂硫??꾨옒濡??대룞
             y += int(box_h * 0.8)
 
-    # 텍스트 박스가 캔버스를 벗어나지 않도록 최종 보정
+    # ?띿뒪??諛뺤뒪媛 罹붾쾭?ㅻ? 踰쀬뼱?섏? ?딅룄濡?理쒖쥌 蹂댁젙
     x = max(LABEL_PADDING, min(x, canvas.shape[1] - tw - LABEL_PADDING * 2))
     y = max(th + LABEL_PADDING, min(y, canvas.shape[0] - LABEL_PADDING))
 
@@ -365,14 +365,14 @@ def _draw_label(canvas: np.ndarray, text: str, pt: tuple[int, int], drawn_boxes:
     if drawn_boxes is not None:
         drawn_boxes.append((x1_final, y1_final, x2_final, y2_final))
 
-    # 검은 배경 사각형
+    # 寃? 諛곌꼍 ?ш컖??
     cv2.rectangle(
         canvas,
         (x1_final, y1_final),
         (x2_final, y2_final),
         (30, 30, 30), cv2.FILLED
     )
-    # 노란 텍스트
+    # ?몃? ?띿뒪??
     cv2.putText(canvas, text, (x, y), FONT, FONT_SCALE, COLOR_LABEL, FONT_THICKNESS, cv2.LINE_AA)
 
 
@@ -383,12 +383,12 @@ def build_angle_image(
     canvas_h: int = CANVAS_H,
 ) -> np.ndarray:
     """
-    단일 포즈의 정규화 좌표를 사용하여 검은 배경 골격 + 각도 레이블 이미지를 생성합니다.
+    ?⑥씪 ?ъ쫰???뺢퇋??醫뚰몴瑜??ъ슜?섏뿬 寃? 諛곌꼍 怨④꺽 + 媛곷룄 ?덉씠釉??대?吏瑜??앹꽦?⑸땲??
     """
     canvas   = np.zeros((canvas_h, canvas_w, 3), dtype=np.uint8)
     landmarks = raw_pose["landmarks"]
 
-    # ── 1. 좌표 맵 구성 (visibility 0.2 이상만) ──────────────────────────
+    # ?? 1. 醫뚰몴 留?援ъ꽦 (visibility 0.2 ?댁긽留? ??????????????????????????
     coords: dict[int, tuple[int, int]] = {}
     for lm in BPL:
         key = lm.json_key()
@@ -399,13 +399,13 @@ def build_angle_image(
             continue
         coords[int(lm)] = _norm_to_pixel(d["x"], d["y"], canvas_w, canvas_h)
 
-    # ── 2. BODY_CONNECTIONS 기반 흰색 연결선 ─────────────────────────────
+    # ?? 2. BODY_CONNECTIONS 湲곕컲 ?곗깋 ?곌껐???????????????????????????????
     for start_lm, end_lm in BODY_CONNECTIONS:
         s, e = int(start_lm), int(end_lm)
         if s in coords and e in coords:
             cv2.line(canvas, coords[s], coords[e], COLOR_LINE, 2, lineType=cv2.LINE_AA)
 
-    # ── 3. 관절 포인트 그리기 ─────────────────────────────────────────────
+    # ?? 3. 愿???ъ씤??洹몃━湲??????????????????????????????????????????????
     for lm in BPL:
         idx = int(lm)
         if idx not in coords:
@@ -418,11 +418,11 @@ def build_angle_image(
         else:
             inner_color = COLOR_OTHER_PT
 
-        cv2.circle(canvas, pt, 6, (255, 255, 255), -1, lineType=cv2.LINE_AA)  # 흰 테두리
-        cv2.circle(canvas, pt, 4, inner_color,     -1, lineType=cv2.LINE_AA)  # 컬러 내부
+        cv2.circle(canvas, pt, 6, (255, 255, 255), -1, lineType=cv2.LINE_AA)  # ???뚮몢由?
+        cv2.circle(canvas, pt, 4, inner_color,     -1, lineType=cv2.LINE_AA)  # 而щ윭 ?대?
 
-    # ── 4. 각도 레이블 표시 ───────────────────────────────────────────────
-    # joint 이름 → vertex BPL 매핑
+    # ?? 4. 媛곷룄 ?덉씠釉??쒖떆 ???????????????????????????????????????????????
+    # joint ?대쫫 ??vertex BPL 留ㅽ븨
     vertex_map: dict[str, BPL] = {
         "left_knee":       BPL.LEFT_KNEE,
         "right_knee":      BPL.RIGHT_KNEE,
@@ -448,19 +448,19 @@ def build_angle_image(
         if idx not in coords:
             continue
 
-        # 레이블 텍스트: "knee: 110.7deg" (기호는 아스키 안전 처리)
+        # ?덉씠釉??띿뒪?? "knee: 110.7deg" (湲고샇???꾩뒪???덉쟾 泥섎━)
         short_name = joint_result.joint.replace("_", " ")   # e.g. "left knee"
         label_text = f"{short_name}: {joint_result.angle_deg:.1f}deg"
 
-        # 관절 위치 기준 좌/우 분리 오프셋 설정
+        # 愿???꾩튂 湲곗? 醫???遺꾨━ ?ㅽ봽???ㅼ젙
         lx, ly = coords[idx]
         
         if "left" in joint_result.joint:
-            # 텍스트 크기를 미리 계산하여 관절의 왼쪽에 배치되도록 이동
+            # ?띿뒪???ш린瑜?誘몃━ 怨꾩궛?섏뿬 愿?덉쓽 ?쇱そ??諛곗튂?섎룄濡??대룞
             (tw, th), _ = cv2.getTextSize(label_text, FONT, FONT_SCALE, FONT_THICKNESS)
             offset_x = lx - tw - 12
         else:
-            # 우측 관절은 관절의 오른쪽에 배치
+            # ?곗륫 愿?덉? 愿?덉쓽 ?ㅻⅨ履쎌뿉 諛곗튂
             offset_x = lx + 8
             
         _draw_label(canvas, label_text, (offset_x, ly - 10), drawn_boxes)
@@ -477,7 +477,7 @@ def render_all_poses(
     canvas_h: int = CANVAS_H,
 ) -> None:
     """
-    한 테스트 이미지의 모든 포즈에 대해 각도 시각화 이미지를 저장합니다.
+    ???뚯뒪???대?吏??紐⑤뱺 ?ъ쫰?????媛곷룄 ?쒓컖???대?吏瑜???ν빀?덈떎.
     """
     poses_raw = raw_data.get("poses", [])
     n = len(reports)
@@ -495,9 +495,9 @@ def render_all_poses(
         print(f"  -> Angle Vis   : {out_path}")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 콘솔 출력
-# ─────────────────────────────────────────────────────────────────────────────
+# ?????????????????????????????????????????????????????????????????????????????
+# 肄섏넄 異쒕젰
+# ?????????????????????????????????????????????????????????????????????????????
 
 _SECTION = {
     "knee":     "Knee               (Hip - Knee - Ankle)",
@@ -525,12 +525,12 @@ def print_report(test_name: str, result: dict) -> None:
     print()
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 메인
-# ─────────────────────────────────────────────────────────────────────────────
+# ?????????????????????????????????????????????????????????????????????????????
+# 硫붿씤
+# ?????????????????????????????????????????????????????????????????????????????
 
 def main() -> None:
-    # Windows cp949 콘솔 인코딩 방어
+    # Windows cp949 肄섏넄 ?몄퐫??諛⑹뼱
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -539,7 +539,7 @@ def main() -> None:
     print(f"  Input dir    : {LM_JSON_DIR}")
     print(f"  Output dir   : {ANGLE_DIR}")
 
-    # 출력 디렉토리 생성
+    # 異쒕젰 ?붾젆?좊━ ?앹꽦
     ANGLE_DIR.mkdir(parents=True, exist_ok=True)
     ANGLE_JSON_DIR.mkdir(parents=True, exist_ok=True)
     ANGLE_IMG_DIR.mkdir(parents=True, exist_ok=True)
@@ -548,28 +548,28 @@ def main() -> None:
 
     for test_name, json_path in TEST_FILES.items():
 
-        # ── 입력 파일이 없으면 results/ 루트에서 폴백 ──────────────────
+        # ?? ?낅젰 ?뚯씪???놁쑝硫?results/ 猷⑦듃?먯꽌 ?대갚 ??????????????????
         if not json_path.exists():
             fallback = RESULTS_DIR / f"{test_name}_landmarks.json"
             if fallback.exists():
                 json_path = fallback
-                print(f"\n  [WARN] landmark_json/ 없음 -> fallback: {fallback.name}")
+                print(f"\n  [WARN] landmark_json/ ?놁쓬 -> fallback: {fallback.name}")
             else:
-                print(f"\n  [SKIP] 파일 없음: {json_path}")
+                print(f"\n  [SKIP] ?뚯씪 ?놁쓬: {json_path}")
                 continue
 
         result = analyze_file(json_path)
         all_results[test_name] = result
         print_report(test_name, result)
 
-        # ── 개별 angle JSON 저장 ───────────────────────────────────────
+        # ?? 媛쒕퀎 angle JSON ??????????????????????????????????????????
         save_data = {k: v for k, v in result.items() if not k.startswith("_")}
         per_path  = ANGLE_JSON_DIR / f"{test_name}_angle_plus.json"
         with per_path.open("w", encoding="utf-8") as f:
             json.dump(save_data, f, ensure_ascii=False, indent=2)
         print(f"  -> Angle JSON  : {per_path}")
 
-        # ── 각도 시각화 이미지 저장 ────────────────────────────────────
+        # ?? 媛곷룄 ?쒓컖???대?吏 ???????????????????????????????????????
         render_all_poses(
             test_name  = test_name,
             raw_data   = result["_raw"],
@@ -577,7 +577,7 @@ def main() -> None:
             out_dir    = ANGLE_IMG_DIR,
         )
 
-    # ── 통합 angle JSON 저장 ──────────────────────────────────────────
+    # ?? ?듯빀 angle JSON ?????????????????????????????????????????????
     combined = {
         name: {k: v for k, v in res.items() if not k.startswith("_")}
         for name, res in all_results.items()
@@ -589,5 +589,147 @@ def main() -> None:
     print("\n[DONE] All angle results saved.\n")
 
 
+
+# -----------------------------------------------------------------------------
+# Backend diagnosis payload helpers
+# -----------------------------------------------------------------------------
+
+def _safe_visibility(value: Any) -> float:
+    return 1.0 if value is None else float(value)
+
+
+def frame_record_to_pose(frame_record: dict[str, Any], pose_index: int = 0) -> dict | None:
+    """Convert landmark_exporter.py frame record into analyze_pose() input."""
+    if not frame_record.get("detected"):
+        return None
+
+    landmarks = {}
+    for item in frame_record.get("landmarks", []):
+        name = item.get("name")
+        if not name:
+            continue
+        landmarks[name] = {
+            "x": float(item["x"]),
+            "y": float(item["y"]),
+            "z": float(item["z"]),
+            "visibility": _safe_visibility(item.get("visibility")),
+        }
+
+    return {"pose_index": pose_index, "landmarks": landmarks}
+
+
+def _rom_from_values(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    return max(values) - min(values)
+
+
+def _midpoint(a: LandmarkPoint, b: LandmarkPoint, name: str) -> LandmarkPoint:
+    return LandmarkPoint(
+        x=(a.x + b.x) / 2,
+        y=(a.y + b.y) / 2,
+        z=(a.z + b.z) / 2,
+        visibility=min(a.visibility, b.visibility),
+        name=name,
+    )
+
+
+def _spine_angle(landmarks: dict[str, dict]) -> float | None:
+    try:
+        left_shoulder = get_lm(landmarks, BPL.LEFT_SHOULDER)
+        right_shoulder = get_lm(landmarks, BPL.RIGHT_SHOULDER)
+        left_hip = get_lm(landmarks, BPL.LEFT_HIP)
+        right_hip = get_lm(landmarks, BPL.RIGHT_HIP)
+        left_knee = get_lm(landmarks, BPL.LEFT_KNEE)
+        right_knee = get_lm(landmarks, BPL.RIGHT_KNEE)
+    except KeyError:
+        return None
+
+    shoulder_mid = _midpoint(left_shoulder, right_shoulder, "mid_shoulder")
+    hip_mid = _midpoint(left_hip, right_hip, "mid_hip")
+    knee_mid = _midpoint(left_knee, right_knee, "mid_knee")
+    if min(shoulder_mid.visibility, hip_mid.visibility, knee_mid.visibility) < VISIBILITY_THRESHOLD:
+        return None
+    return calculate_angle_3d(shoulder_mid, hip_mid, knee_mid)
+
+
+def calculate_export_rom_metrics(export_payload: dict[str, Any]) -> dict[str, float]:
+    """Calculate ROM metrics from landmark_exporter.py JSON payload."""
+    angles_by_joint: dict[str, list[float]] = {
+        "left_knee": [],
+        "right_knee": [],
+        "left_shoulder": [],
+        "right_shoulder": [],
+        "spine_flexion": [],
+    }
+
+    for index, frame in enumerate(export_payload.get("frames", [])):
+        pose = frame_record_to_pose(frame, pose_index=index)
+        if pose is None:
+            continue
+
+        report = analyze_pose(pose)
+        for joint in report.joints:
+            if joint.reliable and joint.angle_deg is not None and joint.joint in angles_by_joint:
+                angles_by_joint[joint.joint].append(float(joint.angle_deg))
+
+        spine_angle = _spine_angle(pose["landmarks"])
+        if spine_angle is not None:
+            angles_by_joint["spine_flexion"].append(float(spine_angle))
+
+    return {
+        "knee_left_rom": round(_rom_from_values(angles_by_joint["left_knee"]), 2),
+        "knee_right_rom": round(_rom_from_values(angles_by_joint["right_knee"]), 2),
+        "shoulder_left_rom": round(_rom_from_values(angles_by_joint["left_shoulder"]), 2),
+        "shoulder_right_rom": round(_rom_from_values(angles_by_joint["right_shoulder"]), 2),
+        "spine_flexion_rom": round(_rom_from_values(angles_by_joint["spine_flexion"]), 2),
+    }
+
+
+def calculate_diagnosis_flags(metrics: dict[str, float]) -> dict[str, Any]:
+    knee_asymmetry = abs(metrics["knee_left_rom"] - metrics["knee_right_rom"]) > 8.0
+    shoulder_asymmetry = abs(metrics["shoulder_left_rom"] - metrics["shoulder_right_rom"]) > 8.0
+
+    falls_score = 0.0
+    if metrics["knee_left_rom"] < 75.0 or metrics["knee_right_rom"] < 75.0:
+        falls_score += 4.5
+    if knee_asymmetry:
+        falls_score += 3.5
+    if metrics["spine_flexion_rom"] < 30.0:
+        falls_score += 2.0
+
+    return {
+        "knee_asymmetry_detected": knee_asymmetry,
+        "shoulder_asymmetry_detected": shoulder_asymmetry,
+        "falls_risk_score": round(min(falls_score, 10.0), 2),
+    }
+
+
+def build_diagnosis_payload(
+    export_payload: dict[str, Any],
+    user_id: str,
+    output_path: str,
+) -> dict[str, Any]:
+    """Build POST /api/v1/diagnosis payload from landmark_exporter.py output."""
+    metrics = calculate_export_rom_metrics(export_payload)
+    diagnosis = calculate_diagnosis_flags(metrics)
+    return {
+        "user_id": user_id,
+        "source": export_payload.get("source", "webcam"),
+        "landmark_file_path": output_path,
+        "summary": {
+            "total_frames": int(export_payload.get("total_frames", 0)),
+            "detected_frames": int(export_payload.get("detected_frames", 0)),
+            "detection_rate": float(export_payload.get("detection_rate_percent", 0.0)),
+        },
+        "metrics": metrics,
+        "diagnosis": diagnosis,
+    }
+
 if __name__ == "__main__":
     main()
+
+
+
+
+

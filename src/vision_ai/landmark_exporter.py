@@ -14,7 +14,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import time
+import urllib.error
+import urllib.request
 from typing import Any
 
 import cv2
@@ -25,6 +28,9 @@ from mediapipe.tasks.python import vision
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, "..", ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+from src.vision_ai.rom_prototype.angle_calculator_test_plus import build_diagnosis_payload
 DEFAULT_MODEL_PATH = os.path.join(PROJECT_ROOT, "models", "pose_landmarker_full.task")
 
 
@@ -300,6 +306,24 @@ def export_landmarks(
     return payload
 
 
+
+def post_diagnosis_payload(api_url: str, payload: dict[str, Any]) -> dict[str, Any]:
+    data = json.dumps(payload).encode("utf-8")
+    request = urllib.request.Request(
+        api_url,
+        data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            response_body = response.read().decode("utf-8")
+            return json.loads(response_body) if response_body else {}
+    except urllib.error.HTTPError as exc:
+        error_body = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"Diagnosis API returned HTTP {exc.code}: {error_body}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"Could not connect to diagnosis API: {exc.reason}") from exc
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Export MediaPipe 3D pose landmarks to JSON.")
     source_group = parser.add_mutually_exclusive_group(required=True)
@@ -310,6 +334,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL_PATH, help="Path to pose_landmarker .task model.")
     parser.add_argument("--max-frames", type=int, default=None, help="Optional frame limit.")
     parser.add_argument("--preview", action="store_true", help="Show a preview window. Press q to stop.")
+    parser.add_argument("--user-id", type=str, default=None, help="User ID to save diagnosis data for.")
+    parser.add_argument("--send-to-api", action="store_true", help="Send scan summary/ROM diagnosis to backend after export.")
+    parser.add_argument("--api-url", type=str, default="http://127.0.0.1:8000/api/v1/diagnosis/", help="Diagnosis API endpoint URL.")
     return parser.parse_args()
 
 
@@ -331,9 +358,24 @@ def main() -> None:
     print(f"  detected frames : {result['detected_frames']}")
     print(f"  detection rate  : {result['detection_rate_percent']}%")
 
+    if args.send_to_api or args.user_id:
+        if not args.user_id:
+            raise ValueError("--user-id is required when sending diagnosis data to the backend.")
+        diagnosis_payload = build_diagnosis_payload(result, args.user_id, args.output)
+        api_response = post_diagnosis_payload(args.api_url, diagnosis_payload)
+        print("[SUCCESS] Diagnosis saved to backend")
+        print(f"  api url         : {args.api_url}")
+        print(f"  session id      : {api_response.get('session_id')}")
+        print(f"  falls score     : {api_response.get('diagnosis', {}).get('falls_risk_score')}")
+
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
 
 
 
