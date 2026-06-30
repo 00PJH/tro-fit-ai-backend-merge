@@ -1,4 +1,0 @@
-image_name,width,height,inference_time_seconds,num_poses_detected,hardware_delegate,model_name
-test_1.jpg,600,477,0.0413,2,CPU (TFLite XNNPACK),pose_landmarker_full.task
-test_2.jpg,420,632,0.024,1,CPU (TFLite XNNPACK),pose_landmarker_full.task
-test_3.jpg,612,408,0.0231,1,CPU (TFLite XNNPACK),pose_landmarker_full.task

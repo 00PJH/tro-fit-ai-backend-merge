@@ -1,1 +1,1 @@
-.venv\Scripts\uvicorn app.main:app --reload
+.venv\Scripts\python -m uvicorn app.main:app --reload
