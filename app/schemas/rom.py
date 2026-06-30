@@ -39,9 +39,13 @@ class FrameData(BaseModel):
 
 class RomAnalyzeRequest(BaseModel):
     session_id: str
-    measurement_type: str
+    measurement_type: Optional[str] = None
     joint: str
     movement: str
+    side: Optional[str] = None
+    video_file: Optional[str] = None
+    video_info: Optional[Dict[str, Any]] = None
+    model: Optional[str] = None
     measurement: Optional[Any] = None
     frames: List[FrameData]
 
@@ -53,15 +57,22 @@ class RomAnalyzeRequest(BaseModel):
 class RomResultItem(BaseModel):
     neutral_angle: Optional[float] = None
     max_angle: Optional[float] = None
+    ama_neutral_angle: Optional[float] = None
+    ama_max_angle: Optional[float] = None
     rom: Optional[float] = None
     reliable: bool
     reason: Optional[str] = None
 
-class RomRatioItem(BaseModel):
-    rom_deg: float
+class MobilityScore(BaseModel):
     normal_deg: float
-    rom_ratio_pct: float
+    rom_ratio: float
     grade: str
+    clinical_meaning: str
+
+class MobilityAnalysisItem(BaseModel):
+    side: str
+    measured_angle_deg: float
+    mobility_score: MobilityScore
 
 class MeasurementMeta(BaseModel):
     neutral_captured_at: str
@@ -72,16 +83,28 @@ class MeasurementMeta(BaseModel):
     visibility_threshold: float
 
 class RomAnalyzeResponse(BaseModel):
+    session_id: str
+    week_number: int
+    measured_at: str
     joint: str
     movement: str
-    measurement: MeasurementMeta
-    rom_results: Dict[str, RomResultItem] = Field(
-        ..., description="Dict mapping joints (e.g. left_shoulder) to ROM calculation results"
-    )
-    rom_ratio: Dict[str, RomRatioItem] = Field(
-        ..., description="Dict mapping joints to ROM achievement ratios and grades"
+    side: str
+    mobility_analysis: List[MobilityAnalysisItem] = Field(
+        ..., description="List of mobility scores and grades per side"
     )
     confidence: str
-    elapsed_sec: float
-    history_id: Optional[int] = Field(None, description="Database ID of the saved measurement record")
-    created_at: Optional[str] = Field(None, description="ISO timestamp of when the record was created")
+
+class RomHistoryItem(BaseModel):
+    session_id: str
+    week_number: int
+    measured_at: str
+    joint: str
+    movement: str
+    side: str
+    mobility_analysis: List[MobilityAnalysisItem] = Field(
+        ..., description="List of mobility scores and grades per side"
+    )
+    confidence: str
+
+class RomHistoryListResponse(BaseModel):
+    results: List[RomHistoryItem]

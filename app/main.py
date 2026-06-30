@@ -5,7 +5,7 @@ from fastapi.responses import FileResponse
 from app.db.session import engine
 from app.db.base import Base
 from app.api.v1.routers import api_router
-from app.models import user, item, diagnosis  # noqa: F401
+from app.models import user  # noqa: F401
 from app.models.rom import RomHistory  # noqa: F401
 
 # 앱 시작 시 DB 테이블 초기화 및 생성

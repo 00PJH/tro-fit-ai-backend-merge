@@ -300,6 +300,8 @@ def analyze_rom_from_frames(request: Any) -> dict:
             rom_results[joint] = {
                 "neutral_angle": round(n_angle, 2),
                 "max_angle": round(m_angle, 2),
+                "ama_neutral_angle": round(n_angle, 2),
+                "ama_max_angle": round(m_angle, 2),
                 "rom": rom_val,
                 "reliable": True,
             }
@@ -307,58 +309,139 @@ def analyze_rom_from_frames(request: Any) -> dict:
             rom_results[joint] = {
                 "neutral_angle": round(n_angle, 2) if n_angle is not None else None,
                 "max_angle": round(m_angle, 2) if m_angle is not None else None,
+                "ama_neutral_angle": round(n_angle, 2) if n_angle is not None else None,
+                "ama_max_angle": round(m_angle, 2) if m_angle is not None else None,
                 "rom": None,
                 "reliable": False,
                 "reason": "neutral_unreliable" if n_angle is None else "max_unreliable",
             }
 
-    # 7. ROM Ratio and Grades
+    # 7. Mobility Analysis
     joint_key = f"{request.joint}_{request.movement}"
     normal_entry = NORMAL_ROM.get(joint_key, {})
     normal_deg = normal_entry.get("normal_deg", 150)
 
-    rom_ratio = {}
+    mobility_analysis = []
     for joint, result in rom_results.items():
         if result["reliable"] and result["rom"] is not None:
             ratio = round((result["rom"] / normal_deg) * 100, 1) if normal_deg > 0 else 0.0
-            grade = (
-                "정상 범위" if ratio >= 75
-                else "경도 제한" if ratio >= 50
-                else "중등도 제한" if ratio >= 25
-                else "고도 제한"
-            )
-            rom_ratio[joint] = {
-                "rom_deg": result["rom"],
-                "normal_deg": float(normal_deg),
-                "rom_ratio_pct": ratio,
-                "grade": grade,
-            }
+            
+            if ratio >= 75:
+                grade = "NORMAL"
+            elif ratio >= 50:
+                grade = "WARNING"
+            else:
+                grade = "CRITICAL"
+
+            clinical_meaning = ""
+            joint_lower = request.joint.lower()
+            if "shoulder" in joint_lower:
+                if grade == "NORMAL":
+                    clinical_meaning = "어깨 위 동작 포함 일상 동작 대부분 가능"
+                elif grade == "WARNING":
+                    clinical_meaning = "어깨 가동범위 제한 감지. 경미한 일상 불편 가능"
+                else:
+                    clinical_meaning = "기본 위생 동작 불가. 즉각 재활 권고"
+            elif "elbow" in joint_lower:
+                if grade == "NORMAL":
+                    clinical_meaning = "팔꿈치 관절 정상 범위. 대부분의 일상 동작 가능"
+                elif grade == "WARNING":
+                    clinical_meaning = "팔꿈치 가동성 제한 감지. 스트레칭 권고"
+                else:
+                    clinical_meaning = "식사, 세면 등 일상 도구 사용 제한. 재활 권고"
+            elif "knee" in joint_lower:
+                if grade == "NORMAL":
+                    clinical_meaning = "무릎 관절 정상 범위. 일상 보행 및 계단 이용 가능"
+                elif grade == "WARNING":
+                    clinical_meaning = "무릎 가동성 제한 감지. 쪼그려 앉기 등 제한 가능"
+                else:
+                    clinical_meaning = "정상 보행 및 계단 오르내리기 불가. 즉각 재활 권고"
+            elif "hip" in joint_lower:
+                if grade == "NORMAL":
+                    clinical_meaning = "고관절 정상 범위. 앉고 서기 및 보행 대부분 가능"
+                elif grade == "WARNING":
+                    clinical_meaning = "고관절 가동성 제한 감지. 깊이 앉기 등 다소 불편"
+                else:
+                    clinical_meaning = "보행 장애 및 서기 곤란. 즉각 재활 권고"
+            elif "ankle" in joint_lower:
+                if grade == "NORMAL":
+                    clinical_meaning = "발목 관절 정상 범위. 보행 및 균형 유지 가능"
+                elif grade == "WARNING":
+                    clinical_meaning = "발목 가동성 제한 감지. 경사로 등 보행 시 제한"
+                else:
+                    clinical_meaning = "발끝 들기 불가 및 보행 불안정. 즉각 재활 권고"
+            else:
+                if grade == "NORMAL":
+                    clinical_meaning = "관절 가동범위 정상. 대부분의 일상 동작 가능"
+                elif grade == "WARNING":
+                    clinical_meaning = "관절 가동범위 제한 감지. 스트레칭 권고"
+                else:
+                    clinical_meaning = "해당 관절 기본 기능 수행 불가. 즉각 재활 권고"
+
+            side_val = "both"
+            if joint.startswith("left_"):
+                side_val = "left"
+            elif joint.startswith("right_"):
+                side_val = "right"
+
+            mobility_analysis.append({
+                "side": side_val,
+                "measured_angle_deg": result["rom"],
+                "mobility_score": {
+                    "normal_deg": float(normal_deg),
+                    "rom_ratio": ratio,
+                    "grade": grade,
+                    "clinical_meaning": clinical_meaning
+                }
+            })
 
     # 8. Evaluate confidence
     reliable_count = sum(1 for v in rom_results.values() if v["reliable"])
+    if reliable_count == 0:
+        raise ValueError("관절 위치 검출 신뢰도가 낮아 가동범위(ROM)를 계산할 수 없습니다.")
     confidence = "HIGH" if reliable_count >= 2 else "MEDIUM" if reliable_count >= 1 else "LOW"
 
     elapsed_sec = time.perf_counter() - start_time
 
     # 9. Format response metadata
     max_candidate_strings = [
-        f"{f.timestamp_ms}ms (frame #{f.frame_index})"
+        f"{f.timestamp_ms / 1000.0:.3f}s (frame #{f.frame_index})"
         for f in max_candidates
     ]
 
+    inferred_side = request.side
+    if not inferred_side:
+        if len(mobility_analysis) > 1:
+            inferred_side = "both"
+        elif len(mobility_analysis) == 1:
+            inferred_side = mobility_analysis[0]["side"]
+        else:
+            inferred_side = "both"
+
     return {
+        "session_id": request.session_id,
         "joint": request.joint,
         "movement": request.movement,
+        "side": inferred_side,
+        "video_file": request.video_file or f"{request.joint}_{request.movement}_{inferred_side}.mp4",
+        "video_info": request.video_info or {
+            "fps": 24.0,
+            "total_frames": len(request.frames),
+            "width": 1920,
+            "height": 1080,
+            "duration_s": round(len(request.frames) / 24.0, 3) if len(request.frames) > 0 else 0.0
+        },
         "measurement": {
-            "neutral_captured_at": f"{neutral_frame.timestamp_ms}ms (frame #{neutral_frame.frame_index})",
+            "neutral_captured_at": f"{neutral_frame.timestamp_ms / 1000.0:.3f}s (frame #{neutral_frame.frame_index})",
             "max_candidates": max_candidate_strings,
-            "max_selected": f"{best_max_frame.timestamp_ms}ms (frame #{best_max_frame.frame_index})",
+            "max_selected": f"{best_max_frame.timestamp_ms / 1000.0:.3f}s (frame #{best_max_frame.frame_index})",
             "selection_reason": reason,
             "use_world_landmarks": True,
             "visibility_threshold": VISIBILITY_THRESHOLD,
         },
         "rom_results": rom_results,
-        "rom_ratio": rom_ratio,
+        "mobility_analysis": mobility_analysis,
         "confidence": confidence,
         "elapsed_sec": round(elapsed_sec, 3),
+        "model": request.model or "pose_landmarker_full.task"
     }
